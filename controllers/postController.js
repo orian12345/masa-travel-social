@@ -1,15 +1,18 @@
 const Post = require('../models/Post');
 const Group = require('../models/Group');
 
-// Feed = my own posts + posts belonging to groups I'm a member of.
-// This is the "list" operation for the Post model (requirement #19/#22).
+// Feed = every standalone post (not tied to a group) from any user, plus my
+// own posts and posts from groups I'm a member of. Group-scoped posts stay
+// hidden from non-members here — that's requirement #21's example ("a user
+// can't see posts in a private group they're not a member of"), which still
+// applies even though the rest of the feed is now global on request.
 exports.listFeed = async (req, res) => {
   try {
     const myGroups = await Group.find({ members: req.session.userId }).select('_id');
     const groupIds = myGroups.map((g) => g._id);
 
     const posts = await Post.find({
-      $or: [{ author: req.session.userId }, { group: { $in: groupIds } }],
+      $or: [{ group: null }, { author: req.session.userId }, { group: { $in: groupIds } }],
     })
       .populate('author', 'displayName verified')
       .populate('group', 'name destination')

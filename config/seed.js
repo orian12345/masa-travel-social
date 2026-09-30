@@ -16,6 +16,22 @@ const usersData = [
   { username: 'roi', passwordHash: 'password1', displayName: 'רועי אבן', age: 34, bio: 'טיולי משפחה עם שני ילדים.', languages: ['עברית', 'אנגלית'], travelStyle: 'family', verified: false },
   { username: 'dana', passwordHash: 'password1', displayName: 'דנה לוי', age: 24, bio: 'בטן-גב מקצועית, אוהבת בתי קפה.', languages: ['עברית'], travelStyle: 'relaxed', verified: false },
   { username: 'nir', passwordHash: 'password1', displayName: 'ניר כהן', age: 30, bio: 'ממליץ מומחה לאוכל איטלקי.', languages: ['עברית', 'אנגלית', 'איטלקית'], travelStyle: 'museums', verified: true },
+
+  // Additional fictional users, mainly to author the Europe-wide recommendation posts below.
+  { username: 'tamar', passwordHash: 'password1', displayName: 'תמר גולן', age: 28, bio: 'חובבת אמנות ומוזיאונים, תמיד עם מצלמה.', languages: ['עברית', 'אנגלית', 'גרמנית'], travelStyle: 'museums', verified: true },
+  { username: 'omer', passwordHash: 'password1', displayName: 'עומר פרץ', age: 32, bio: 'תרמילאי מקצועי, אוהב הרים ומסלולי הליכה.', languages: ['עברית', 'אנגלית'], travelStyle: 'backpacking', verified: true },
+  { username: 'maya', passwordHash: 'password1', displayName: 'מאיה שלו', age: 25, bio: 'חיי לילה, פסטיבלים ומוזיקה חיה.', languages: ['עברית', 'אנגלית', 'ספרדית'], travelStyle: 'nightlife', verified: false },
+  { username: 'eyal', passwordHash: 'password1', displayName: 'אייל מזרחי', age: 30, bio: 'טס עם המשפחה, תמיד מחפש פעילויות לילדים.', languages: ['עברית', 'אנגלית'], travelStyle: 'family', verified: true },
+  { username: 'hila', passwordHash: 'password1', displayName: 'הילה בן־דוד', age: 27, bio: 'בטן־גב, קפה טוב ונופים יפים.', languages: ['עברית', 'אנגלית', 'צרפתית'], travelStyle: 'relaxed', verified: true },
+  { username: 'gilad', passwordHash: 'password1', displayName: 'גלעד עמר', age: 35, bio: 'היסטוריה ואדריכלות אירופאית.', languages: ['עברית', 'אנגלית', 'איטלקית'], travelStyle: 'museums', verified: true },
+  { username: 'keren', passwordHash: 'password1', displayName: 'קרן טל', age: 24, bio: 'תרמילאית עם תקציב נמוך ורשימת יעדים ארוכה.', languages: ['עברית', 'אנגלית'], travelStyle: 'backpacking', verified: false },
+  { username: 'amit', passwordHash: 'password1', displayName: 'עמית שרעבי', age: 29, bio: 'מחפש את הבר הכי טוב בכל עיר.', languages: ['עברית', 'אנגלית'], travelStyle: 'nightlife', verified: true },
+  { username: 'lior', passwordHash: 'password1', displayName: 'ליאור כץ', age: 31, bio: 'טיולים רגועים, בלי לחץ ובלי תוכנית קשיחה.', languages: ['עברית', 'אנגלית', 'גרמנית'], travelStyle: 'relaxed', verified: true },
+  { username: 'yael', passwordHash: 'password1', displayName: 'יעל רוזן', age: 26, bio: 'מוזיאונים, גלריות ואדריכלות.', languages: ['עברית', 'אנגלית', 'רוסית'], travelStyle: 'museums', verified: true },
+  { username: 'dor', passwordHash: 'password1', displayName: 'דור אברהם', age: 33, bio: 'תרמילאי שמתכנן הכל תוך כדי תנועה.', languages: ['עברית', 'אנגלית'], travelStyle: 'backpacking', verified: false },
+  { username: 'shani', passwordHash: 'password1', displayName: 'שני כהן', age: 28, bio: 'נוסעת עם בן הזוג, אוהבת ספא ונופים.', languages: ['עברית', 'אנגלית'], travelStyle: 'family', verified: true },
+  { username: 'ronen', passwordHash: 'password1', displayName: 'רונן ברק', age: 36, bio: 'טיולי היסטוריה ותרבות בקצב נינוח.', languages: ['עברית', 'אנגלית', 'ספרדית'], travelStyle: 'relaxed', verified: true },
+  { username: 'adi', passwordHash: 'password1', displayName: 'עדי מלכה', age: 24, bio: 'חופים, שקיעות וחיי לילה.', languages: ['עברית', 'אנגלית'], travelStyle: 'nightlife', verified: false },
 ];
 
 const groupsData = [
@@ -54,6 +70,34 @@ const postsTemplates = [
   { username: 'dana', type: 'recommendation', title: 'בית קפה עם נוף לקולוסיאום', content: 'המקום המושלם לפוסט אינסטגרם ולקפה איטלקי אמיתי.', destination: 'רומא, איטליה', tags: ['בטן־גב'], group: 'מטיילים ברומא' },
   { username: 'shira', type: 'partner', title: 'קבוצה למסלול הרים ביפן', content: 'מארגנת קבוצה של 6 להליכה בהרי היפנים, קצב בינוני.', destination: 'יפן', tags: ['תרמילאות'], group: 'מטיילים ביפן' },
   { username: 'yuval', type: 'recommendation', title: 'שוק לילה מקומי', content: 'אוכל רחוב אותנטי במחירים נמוכים, פחות תיירים.', destination: 'בנגקוק, תאילנד', tags: ['אוכל', 'תקציב נמוך'], group: 'מטיילים בבנגקוק - אוגוסט 2026' },
+
+  // Recommendation posts spanning most of Europe, one country each.
+  { username: 'tamar', type: 'recommendation', title: 'מוזיאון אורסה בבוקר מוקדם', content: 'הגיעו לפתיחה ב-9:30 - בלי תורים, ואפשר לראות את ואן גוך בשקט.', destination: 'פריז, צרפת', tags: ['תרבות', 'אמנות'] },
+  { username: 'amit', type: 'recommendation', title: 'Park Güell מוקדם בבוקר', content: 'כניסה חינם עד 8:00, ואחר כך יורדים ללה רמבלה לטאפאס.', destination: 'ברצלונה, ספרד', tags: ['אדריכלות', 'חיי לילה'] },
+  { username: 'lior', type: 'recommendation', title: 'East Side Gallery + שוק אוכל', content: 'קטע מקיר ברלין עם גרפיטי מרשים, ואחר כך שוק Markthalle Neun לאוכל רחוב.', destination: 'ברלין, גרמניה', tags: ['היסטוריה', 'אוכל'] },
+  { username: 'yael', type: 'recommendation', title: 'Tate Modern + Borough Market', content: 'כניסה חינמית לתערוכת הקבע, ואחר כך שוק בורו לצהריים משובח.', destination: 'לונדון, בריטניה', tags: ['תרבות', 'אוכל'] },
+  { username: 'dor', type: 'recommendation', title: 'סיור אופניים לאורך התעלות', content: 'שוכרים אופניים ליום שלם ומסתובבים בין התעלות, הרבה יותר כיף מאשר סיור רגלי.', destination: 'אמסטרדם, הולנד', tags: ['אופניים', 'נוף'] },
+  { username: 'hila', type: 'recommendation', title: 'שקיעה מ-Oia בלי הקהל', content: 'הגיעו 30 דקות מוקדם וקחו נקודת תצפית קצת יותר צפונה מהכיכר הראשית.', destination: 'סנטוריני, יוון', tags: ['שקיעה', 'רומנטי'] },
+  { username: 'gilad', type: 'recommendation', title: 'קונצרט קלאסי בכרטיס עמידה', content: 'באופרה הממלכתית יש כרטיסי עמידה זולים מאוד לסטודנטים ולצעירים.', destination: 'וינה, אוסטריה', tags: ['מוזיקה', 'תרבות'] },
+  { username: 'omer', type: 'recommendation', title: 'פאראגליידינג מעל האגמים', content: 'הנוף על האגמים הטורקיז מלמעלה הוא חוויה שלא שוכחים, מומלץ להזמין מראש.', destination: 'אינטרלאקן, שוויץ', tags: ['הרפתקה', 'טבע'] },
+  { username: 'keren', type: 'recommendation', title: 'תעלות וופל אמיתי', content: 'עיר קטנה וציורית, ופלים טריים מכל פינה - שווה ללון לילה אחד לפחות.', destination: 'בריז, בלגיה', tags: ['אוכל', 'נוף'] },
+  { username: 'eyal', type: 'recommendation', title: 'הטירה בפראג בזריחה', content: 'מגיעים לפני 8:00 ומקבלים את כל הטירה כמעט לבד, מושלם לתמונות משפחתיות.', destination: 'פראג, צ׳כיה', tags: ['אדריכלות', 'משפחות'] },
+  { username: 'shani', type: 'recommendation', title: 'מרחצאות תרמיים Széchenyi', content: 'ספא חיצוני ענק עם מים חמים כל השנה, מושלם ליום מנוחה עם הילדים.', destination: 'בודפשט, הונגריה', tags: ['רלקסציה', 'משפחות'] },
+  { username: 'ronen', type: 'recommendation', title: 'הרובע היהודי קז׳ימייז׳', content: 'בתי כנסת עתיקים ובתי קפה קטנים - חלק חשוב מההיסטוריה שכדאי להכיר.', destination: 'קרקוב, פולין', tags: ['היסטוריה', 'תרבות'] },
+  { username: 'adi', type: 'recommendation', title: 'חומות העיר העתיקה + שייט ללוקרום', content: 'הליכה על החומות בשעות הבוקר, ואחר הצהריים שייט קצר לאי השקט.', destination: 'דוברובניק, קרואטיה', tags: ['נוף', 'ים'] },
+  { username: 'maya', type: 'recommendation', title: 'פאב עם מוזיקה חיה', content: 'ברחוב טמפל בר יש כמה פאבים עם נגנים חיים כל ערב, כניסה חופשית.', destination: 'דבלין, אירלנד', tags: ['מוזיקה', 'חיי לילה'] },
+  { username: 'tamar', type: 'recommendation', title: 'Nyhavn בשעות הערב', content: 'הבתים הצבעוניים לאורך התעלה נראים הכי טוב עם התאורה של הערב.', destination: 'קופנהגן, דנמרק', tags: ['אדריכלות', 'נוף'] },
+  { username: 'amit', type: 'recommendation', title: 'העיר העתיקה גמלה סטאן', content: 'רחובות אבן צרים, אדריכלות מימי הביניים ובתי קפה חמודים בכל פינה.', destination: 'שטוקהולם, שוודיה', tags: ['היסטוריה', 'אדריכלות'] },
+  { username: 'lior', type: 'recommendation', title: 'רכבל להרים והפיורדים', content: 'מהרכבל Fløibanen יש נוף פנורמי על העיר וההרים הסובבים, שווה את זה.', destination: 'ברגן, נורווגיה', tags: ['טבע', 'נוף'] },
+  { username: 'yael', type: 'recommendation', title: 'סאונה פינית אותנטית', content: 'חוויה מקומית אמיתית - סאונה ואז קפיצה למים הקרים, ממש כמו שהתושבים עושים.', destination: 'הלסינקי, פינלנד', tags: ['רלקסציה', 'חוויה מקומית'] },
+  { username: 'dor', type: 'recommendation', title: 'בלו לגון ומעגל הזהב ביום אחד', content: 'שכרו רכב ועשו את שני האתרים באותו יום - חוסך לילה שלם של לינה.', destination: 'רייקיאוויק, איסלנד', tags: ['טבע', 'מים חמים'] },
+  { username: 'hila', type: 'recommendation', title: 'ארמון הפרלמנט והעיר העתיקה', content: 'הבניין השני בגודלו בעולם, וממש לידו רובע עתיק עם בתי קפה שקטים.', destination: 'בוקרשט, רומניה', tags: ['אדריכלות', 'תרבות'] },
+  { username: 'gilad', type: 'recommendation', title: 'כנסיית אלכסנדר נבסקי', content: 'הכנסייה האורתודוקסית המרשימה ביותר במזרח אירופה, כניסה חופשית.', destination: 'סופיה, בולגריה', tags: ['תרבות', 'אדריכלות'] },
+  { username: 'omer', type: 'recommendation', title: 'טיול הליכה סביב אגם בלד', content: 'מסלול קל של כשעתיים סביב האגם עם נוף לאי ולכנסייה הקטנה במרכזו.', destination: 'לובליאנה, סלובניה', tags: ['טבע', 'מסלולים'] },
+  { username: 'keren', type: 'recommendation', title: 'חופים וצלילה בולטה', content: 'מים כחולים צלולים וכמה נקודות צלילה מעולות למתחילים.', destination: 'ולטה, מלטה', tags: ['ים', 'צלילה'] },
+  { username: 'eyal', type: 'recommendation', title: 'חוף פיניקודס עם הילדים', content: 'חוף מוגן ורדוד, מושלם למשפחות עם ילדים קטנים, ויש שם מסעדות דגים טובות.', destination: 'לרנקה, קפריסין', tags: ['ים', 'משפחות'] },
+  { username: 'shani', type: 'recommendation', title: 'הטירה מעל הדנובה', content: 'נוף מדהים על הנהר מלמעלה, ומטה יש רובע עתיק קטן ונעים להסתובב בו.', destination: 'ברטיסלבה, סלובקיה', tags: ['נוף', 'היסטוריה'] },
+  { username: 'ronen', type: 'recommendation', title: 'העיר העתיקה מימי הביניים', content: 'אחת מהערים העתיקות השמורות ביותר באירופה, ממש כמו מסע בזמן.', destination: 'טאלין, אסטוניה', tags: ['היסטוריה', 'אדריכלות'] },
 ];
 
 async function seed() {
