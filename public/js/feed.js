@@ -56,6 +56,11 @@ function renderPostCard(post) {
   const heartColor = post.likedByMe ? 'var(--primary)' : 'var(--text-muted)';
   const isOpen = !!openComments[post._id];
 
+  const shareUrl = window.location.origin + '/posts/' + post._id;
+  const shareText = encodeURIComponent(post.title + ' - ' + post.destination + '\n' + shareUrl);
+  const whatsappHref = 'https://wa.me/?text=' + shareText;
+  const smsHref = 'sms:?body=' + shareText;
+
   return `
     <div class="card" data-post-id="${post._id}">
       <span class="badge">${typeLabel}</span>
@@ -72,7 +77,12 @@ function renderPostCard(post) {
           ♥ ${post.likesCount || 0}
         </button>
         <button type="button" class="secondary toggle-comments" data-id="${post._id}">תגובות</button>
-        <button type="button" class="secondary share-post" data-id="${post._id}">שיתוף</button>
+        <button type="button" class="secondary toggle-share-menu" data-id="${post._id}">שיתוף</button>
+      </div>
+
+      <div class="share-menu" data-id="${post._id}" style="display:none; flex-direction:row; gap:8px; margin-top:8px;">
+        <a href="${whatsappHref}" target="_blank" rel="noopener"><button type="button" class="secondary">שיתוף ב-WhatsApp</button></a>
+        <a href="${smsHref}"><button type="button" class="secondary">שיתוף בהודעה</button></a>
       </div>
 
       ${contactAction}
@@ -166,13 +176,10 @@ $(function () {
     });
   });
 
-  $('#feed-list').on('click', '.share-post', function () {
+  $('#feed-list').on('click', '.toggle-share-menu', function () {
     const id = $(this).data('id').toString();
-    $.post('/api/posts/' + id + '/share', function () {
-      loadFeed();
-    }).fail(function (xhr) {
-      alert((xhr.responseJSON && xhr.responseJSON.error) || 'שגיאה בשיתוף');
-    });
+    const $menu = $(`.share-menu[data-id="${id}"]`);
+    $menu.css('display', $menu.css('display') === 'none' ? 'flex' : 'none');
   });
 
   $('#feed-list').on('click', '.toggle-comments', function () {
