@@ -69,6 +69,6 @@ const PORT = process.env.PORT || 3000;
 
 connectDB().then(() => {
   server.listen(PORT, () => {
-    console.log(`Masa server running on http://localhost:${PORT}`);
+    console.log(`TravelMatch server running on http://localhost:${PORT}`);
   });
 });
