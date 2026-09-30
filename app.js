@@ -20,6 +20,7 @@ const statsRoutes = require('./routes/statsRoutes');
 const pageRoutes = require('./routes/pageRoutes');
 const chatRequestRoutes = require('./routes/chatRequestRoutes');
 const moderationRoutes = require('./routes/moderationRoutes');
+const commentRoutes = require('./routes/commentRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -35,8 +36,10 @@ const sessionMiddleware = session({
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Raised from the 100kb default so a base64-encoded post image (see
+// models/Post.js) fits in the request body.
+app.use(express.json({ limit: '3mb' }));
+app.use(express.urlencoded({ extended: true, limit: '3mb' }));
 app.use(methodOverride('_method'));
 app.use(sessionMiddleware);
 app.use(attachUser);
@@ -54,6 +57,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/chat-requests', chatRequestRoutes);
 app.use('/api/moderation', moderationRoutes);
+app.use('/api/posts/:postId/comments', commentRoutes);
 
 app.use((req, res) => {
   res.status(404).send('הדף לא נמצא');

@@ -1,6 +1,23 @@
 const Post = require('../models/Post');
 const Group = require('../models/Group');
 
+const MAX_IMAGE_CHARS = 1_500_000; // ~1.1MB decoded — keeps documents reasonable
+
+// Adds the two fields the UI actually needs for likes, without shipping the
+// full liker-id array to every client.
+function withLikeInfo(post, userId) {
+  const likes = post.likes || [];
+  return {
+    ...post,
+    likesCount: likes.length,
+    likedByMe: likes.some((id) => id.toString() === userId),
+    likes: undefined,
+  };
+}
+
+const POPULATE_AUTHOR = 'displayName verified';
+const POPULATE_SHARED_FROM = { path: 'sharedFrom', select: 'title destination author', populate: { path: 'author', select: 'displayName' } };
+
 // Feed = every standalone post (not tied to a group) from any user, plus my
 // own posts and posts from groups I'm a member of. Group-scoped posts stay
 // hidden from non-members here — that's requirement #21's example ("a user
@@ -14,12 +31,13 @@ exports.listFeed = async (req, res) => {
     const posts = await Post.find({
       $or: [{ group: null }, { author: req.session.userId }, { group: { $in: groupIds } }],
     })
-      .populate('author', 'displayName verified')
+      .populate('author', POPULATE_AUTHOR)
       .populate('group', 'name destination')
+      .populate(POPULATE_SHARED_FROM)
       .sort({ createdAt: -1 })
       .lean();
 
-    res.json(posts);
+    res.json(posts.map((p) => withLikeInfo(p, req.session.userId)));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'שגיאה בטעינת הפיד' });
@@ -31,9 +49,10 @@ exports.getOne = async (req, res) => {
     const post = await Post.findById(req.params.id)
       .populate('author', 'displayName age languages travelStyle verified')
       .populate('group', 'name destination')
+      .populate(POPULATE_SHARED_FROM)
       .lean();
     if (!post) return res.status(404).json({ error: 'הפוסט לא נמצא' });
-    res.json(post);
+    res.json(withLikeInfo(post, req.session.userId));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'שגיאה בטעינת הפוסט' });
@@ -43,10 +62,11 @@ exports.getOne = async (req, res) => {
 exports.listByGroup = async (req, res) => {
   try {
     const posts = await Post.find({ group: req.params.groupId })
-      .populate('author', 'displayName verified')
+      .populate('author', POPULATE_AUTHOR)
+      .populate(POPULATE_SHARED_FROM)
       .sort({ createdAt: -1 })
       .lean();
-    res.json(posts);
+    res.json(posts.map((p) => withLikeInfo(p, req.session.userId)));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'שגיאה בטעינת פוסטי הקבוצה' });
@@ -70,13 +90,14 @@ exports.search = async (req, res) => {
     }
 
     const posts = await Post.find(query)
-      .populate('author', 'displayName verified')
+      .populate('author', POPULATE_AUTHOR)
       .populate('group', 'name destination')
+      .populate(POPULATE_SHARED_FROM)
       .sort({ createdAt: -1 })
       .limit(100)
       .lean();
 
-    res.json(posts);
+    res.json(posts.map((p) => withLikeInfo(p, req.session.userId)));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'שגיאה בחיפוש' });
@@ -85,7 +106,7 @@ exports.search = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const { type, title, content, destination, tags, budgetPerDay, tripDate, groupId, screeningQuestions } = req.body;
+    const { type, title, content, destination, tags, budgetPerDay, tripDate, groupId, screeningQuestions, imageBase64 } = req.body;
 
     if (!type || !title || !content || !destination) {
       return res.status(400).json({ error: 'נא למלא את כל שדות החובה' });
@@ -96,6 +117,10 @@ exports.create = async (req, res) => {
       if (!group || !group.isMember(req.session.userId)) {
         return res.status(403).json({ error: 'את/ה לא חבר/ה בקבוצה הזו' });
       }
+    }
+
+    if (imageBase64 && (typeof imageBase64 !== 'string' || imageBase64.length > MAX_IMAGE_CHARS || !imageBase64.startsWith('data:image/'))) {
+      return res.status(400).json({ error: 'התמונה גדולה מדי או לא תקינה (עד ~1MB)' });
     }
 
     // Only "partner" posts get the safety questionnaire — a recommendation
@@ -118,6 +143,7 @@ exports.create = async (req, res) => {
       budgetPerDay: budgetPerDay || undefined,
       tripDate: tripDate || undefined,
       screeningQuestions: parsedQuestions,
+      imageBase64: imageBase64 || null,
     });
 
     res.status(201).json(post);
@@ -176,5 +202,57 @@ exports.remove = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'שגיאה במחיקת הפוסט' });
+  }
+};
+
+// Toggle, not separate like/unlike routes — one idempotent action the
+// client calls every time the heart is clicked.
+exports.toggleLike = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ error: 'הפוסט לא נמצא' });
+
+    const userId = req.session.userId;
+    const alreadyLiked = post.likes.some((id) => id.toString() === userId);
+
+    if (alreadyLiked) {
+      post.likes = post.likes.filter((id) => id.toString() !== userId);
+    } else {
+      post.likes.push(userId);
+    }
+    await post.save();
+
+    res.json({ likesCount: post.likes.length, likedByMe: !alreadyLiked });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'שגיאה בעדכון הלייק' });
+  }
+};
+
+// Share = an independent copy of the post in the sharer's own feed, tagged
+// with where it came from — not a reference/pointer, so the original can be
+// edited or deleted later without breaking the share.
+exports.share = async (req, res) => {
+  try {
+    const original = await Post.findById(req.params.id);
+    if (!original) return res.status(404).json({ error: 'הפוסט לא נמצא' });
+
+    const sharedPost = await Post.create({
+      author: req.session.userId,
+      group: null,
+      type: original.type,
+      title: original.title,
+      content: original.content,
+      destination: original.destination,
+      tags: original.tags,
+      budgetPerDay: original.budgetPerDay,
+      imageBase64: original.imageBase64,
+      sharedFrom: original._id,
+    });
+
+    res.status(201).json(sharedPost);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'שגיאה בשיתוף הפוסט' });
   }
 };

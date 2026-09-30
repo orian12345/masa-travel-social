@@ -10,6 +10,9 @@ function addQuestionRow() {
   `);
 }
 
+let selectedImageBase64 = null;
+const MAX_IMAGE_BYTES = 1_000_000; // ~1MB source file, before base64 overhead
+
 $(function () {
   $('select[name=type]').on('change', function () {
     $('#screening-section').toggle($(this).val() === 'partner');
@@ -17,11 +20,34 @@ $(function () {
 
   $('#add-question-btn').on('click', addQuestionRow);
 
+  $('#image-input').on('change', function () {
+    const file = this.files[0];
+    if (!file) {
+      selectedImageBase64 = null;
+      $('#image-preview').hide();
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      alert('התמונה גדולה מדי (מקסימום כ-1MB). נסה/י תמונה קטנה יותר.');
+      this.value = '';
+      selectedImageBase64 = null;
+      $('#image-preview').hide();
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      selectedImageBase64 = e.target.result;
+      $('#image-preview').attr('src', selectedImageBase64).show();
+    };
+    reader.readAsDataURL(file);
+  });
+
   $('#new-post-form').on('submit', function (e) {
     e.preventDefault();
     const $form = $(this);
     const data = {};
     $form.serializeArray().forEach((f) => { data[f.name] = f.value; });
+    if (selectedImageBase64) data.imageBase64 = selectedImageBase64;
 
     if (data.type === 'partner') {
       data.screeningQuestions = [];

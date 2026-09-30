@@ -4,6 +4,7 @@ function escapeHtml(str) {
 
 let feedPosts = [];
 let editingPostId = null;
+const openComments = {}; // postId -> true while its comment panel is expanded
 
 function renderPostCard(post) {
   const isMine = post.author && post.author._id === window.CURRENT_USER_ID;
@@ -31,8 +32,8 @@ function renderPostCard(post) {
 
   const actions = isMine
     ? `
-      <button type="button" class="secondary edit-post" data-id="${post._id}" style="margin-top:10px;">עריכה</button>
-      <button type="button" class="secondary delete-post" data-id="${post._id}" style="margin-top:10px;">מחיקה</button>
+      <button type="button" class="secondary edit-post" data-id="${post._id}">עריכה</button>
+      <button type="button" class="secondary delete-post" data-id="${post._id}">מחיקה</button>
     `
     : '';
 
@@ -44,16 +45,46 @@ function renderPostCard(post) {
         : `<button type="button" class="secondary contact-author" data-user-id="${post.author._id}">יצירת קשר עם ${escapeHtml(post.author.displayName)}</button>`;
   }
 
+  const sharedFromHtml = post.sharedFrom
+    ? `<p class="muted" style="font-size:11.5px;">שותף מתוך פוסט של ${escapeHtml(post.sharedFrom.author ? post.sharedFrom.author.displayName : '')}</p>`
+    : '';
+
+  const imageHtml = post.imageBase64
+    ? `<img src="${post.imageBase64}" style="width:100%; border-radius:var(--radius-m); margin:10px 0;" alt="">`
+    : '';
+
+  const heartColor = post.likedByMe ? 'var(--primary)' : 'var(--text-muted)';
+  const isOpen = !!openComments[post._id];
+
   return `
     <div class="card" data-post-id="${post._id}">
       <span class="badge">${typeLabel}</span>
+      ${sharedFromHtml}
       <h3 style="margin-top:8px;">${escapeHtml(post.title)}</h3>
       <p class="muted">${escapeHtml(post.destination)}${post.group ? ' · ' + escapeHtml(post.group.name) : ''}</p>
       <p>${escapeHtml(post.content)}</p>
+      ${imageHtml}
       <div>${tagsHtml}</div>
       <p class="muted" style="margin-top:8px;">מאת ${escapeHtml(post.author ? post.author.displayName : 'לא ידוע')}</p>
+
+      <div style="display:flex; gap:8px; align-items:center; margin-top:10px; padding-top:10px; border-top:1px solid var(--line);">
+        <button type="button" class="secondary toggle-like" data-id="${post._id}" style="color:${heartColor};">
+          ♥ ${post.likesCount || 0}
+        </button>
+        <button type="button" class="secondary toggle-comments" data-id="${post._id}">תגובות</button>
+        <button type="button" class="secondary share-post" data-id="${post._id}">שיתוף</button>
+      </div>
+
       ${contactAction}
       ${actions}
+
+      <div class="comments-panel" data-id="${post._id}" style="${isOpen ? '' : 'display:none;'} margin-top:10px;">
+        <div class="comments-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:10px;"></div>
+        <form class="add-comment-form" data-id="${post._id}" style="display:flex; gap:8px;">
+          <input type="text" name="text" placeholder="כתוב/כתבי תגובה..." maxlength="500" required style="flex:1;">
+          <button type="submit">שליחה</button>
+        </form>
+      </div>
     </div>
   `;
 }
@@ -65,12 +96,37 @@ function renderFeed() {
     return;
   }
   feedPosts.forEach((post) => $list.append(renderPostCard(post)));
+  Object.keys(openComments).forEach((postId) => {
+    if (openComments[postId]) loadComments(postId);
+  });
 }
 
 function loadFeed() {
   $.get('/api/posts/feed', function (posts) {
     feedPosts = posts;
     renderFeed();
+  });
+}
+
+function renderComment(c) {
+  const isMine = c.author && c.author._id === window.CURRENT_USER_ID;
+  return `
+    <div class="comment-row" data-comment-id="${c._id}" style="font-size:13px; display:flex; justify-content:space-between; gap:8px;">
+      <div><strong>${escapeHtml(c.author ? c.author.displayName : '')}</strong>: ${escapeHtml(c.text)}</div>
+      ${isMine ? `<button type="button" class="secondary delete-comment" data-comment-id="${c._id}" style="padding:2px 8px; font-size:11px;">מחיקה</button>` : ''}
+    </div>
+  `;
+}
+
+function loadComments(postId) {
+  $.get('/api/posts/' + postId + '/comments', function (comments) {
+    const $panel = $(`.comments-panel[data-id="${postId}"] .comments-list`);
+    $panel.empty();
+    if (!comments.length) {
+      $panel.append('<p class="muted" style="font-size:12px;">אין עדיין תגובות.</p>');
+    } else {
+      comments.forEach((c) => $panel.append(renderComment(c)));
+    }
   });
 }
 
@@ -95,6 +151,62 @@ $(function () {
       error: function (xhr) {
         alert((xhr.responseJSON && xhr.responseJSON.error) || 'שגיאה בשליחת הבקשה');
       },
+    });
+  });
+
+  $('#feed-list').on('click', '.toggle-like', function () {
+    const id = $(this).data('id').toString();
+    $.post('/api/posts/' + id + '/like', function (result) {
+      const post = feedPosts.find((p) => p._id === id);
+      if (post) {
+        post.likesCount = result.likesCount;
+        post.likedByMe = result.likedByMe;
+        renderFeed();
+      }
+    });
+  });
+
+  $('#feed-list').on('click', '.share-post', function () {
+    const id = $(this).data('id').toString();
+    $.post('/api/posts/' + id + '/share', function () {
+      loadFeed();
+    }).fail(function (xhr) {
+      alert((xhr.responseJSON && xhr.responseJSON.error) || 'שגיאה בשיתוף');
+    });
+  });
+
+  $('#feed-list').on('click', '.toggle-comments', function () {
+    const id = $(this).data('id').toString();
+    openComments[id] = !openComments[id];
+    const $panel = $(`.comments-panel[data-id="${id}"]`);
+    $panel.toggle(openComments[id]);
+    if (openComments[id]) loadComments(id);
+  });
+
+  $('#feed-list').on('submit', '.add-comment-form', function (e) {
+    e.preventDefault();
+    const id = $(this).data('id').toString();
+    const text = $(this).find('input[name=text]').val();
+    const $form = $(this);
+    $.ajax({
+      url: '/api/posts/' + id + '/comments',
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ text }),
+      success: function () {
+        $form[0].reset();
+        loadComments(id);
+      },
+    });
+  });
+
+  $('#feed-list').on('click', '.delete-comment', function () {
+    const commentId = $(this).data('comment-id').toString();
+    const postId = $(this).closest('.comments-panel').data('id').toString();
+    $.ajax({
+      url: '/api/posts/' + postId + '/comments/' + commentId,
+      method: 'DELETE',
+      success: function () { loadComments(postId); },
     });
   });
 

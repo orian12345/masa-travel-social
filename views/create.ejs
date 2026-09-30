@@ -32,6 +32,11 @@
       <label>תגיות (מופרדות בפסיק)</label>
       <input type="text" name="tags" placeholder="בטן־גב, תרמילאות">
     </div>
+    <div class="form-row">
+      <label>תמונה (אופציונלי, עד ~1MB)</label>
+      <input type="file" id="image-input" accept="image/*">
+      <img id="image-preview" style="display:none; max-width:220px; border-radius:var(--radius-m); margin-top:10px;">
+    </div>
 
     <div id="screening-section" style="display:none;">
       <p class="muted">שאלות סינון (עד 3) — מי שירצה להצטרף יצטרך לענות עליהן לפני שתחליט/י אם לאשר צ'אט.</p>

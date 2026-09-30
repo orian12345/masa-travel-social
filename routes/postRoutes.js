@@ -12,5 +12,7 @@ router.get('/:id', postController.getOne);
 router.post('/', postController.create);
 router.put('/:id', postController.update);
 router.delete('/:id', postController.remove);
+router.post('/:id/like', postController.toggleLike);
+router.post('/:id/share', postController.share);
 
 module.exports = router;

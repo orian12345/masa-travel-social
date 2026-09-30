@@ -162,6 +162,18 @@ input, select, textarea {
 .form-row { margin-bottom: 14px; }
 .form-row label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 6px; }
 
+.comment-row {
+  background: var(--bg);
+  border-radius: var(--radius-s);
+  padding: 8px 10px;
+}
+.card button.toggle-like,
+.card button.toggle-comments,
+.card button.share-post {
+  padding: 8px 12px;
+  font-size: 12.5px;
+}
+
 .auth-page {
   min-height: 100vh;
   display: flex;
