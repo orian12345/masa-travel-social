@@ -1,0 +1,37 @@
+<%- include('partials/header') %>
+<div id="group-header"></div>
+
+<div class="card" id="group-admin-panel" style="display:none;">
+  <h3>ניהול קבוצה</h3>
+  <div id="group-admin-error" class="error-box" style="display:none;"></div>
+  <form id="edit-group-form">
+    <div class="form-row"><label>שם</label><input type="text" name="name" required></div>
+    <div class="form-row"><label>יעד</label><input type="text" name="destination" required></div>
+    <div class="form-row"><label>תיאור</label><textarea name="description" rows="2"></textarea></div>
+    <button type="submit">שמירת שינויים</button>
+    <button type="button" class="secondary" id="delete-group-btn">מחיקת הקבוצה</button>
+  </form>
+</div>
+
+<div class="card">
+  <h3>פוסט חדש בקבוצה</h3>
+  <div id="group-post-error" class="error-box" style="display:none;"></div>
+  <form id="new-group-post-form">
+    <div class="form-row">
+      <label>סוג</label>
+      <select name="type" required>
+        <option value="partner">מחפש/ת שותף/ה</option>
+        <option value="recommendation">המלצה</option>
+      </select>
+    </div>
+    <div class="form-row"><label>כותרת</label><input type="text" name="title" required></div>
+    <div class="form-row"><label>תיאור</label><textarea name="content" rows="2" required></textarea></div>
+    <button type="submit">פרסום בקבוצה</button>
+  </form>
+</div>
+
+<div id="group-posts" class="multi-col-list"></div>
+
+<script>window.GROUP_ID = <%- JSON.stringify(groupId) %>;</script>
+<script src="/js/group.js"></script>
+<%- include('partials/footer') %>

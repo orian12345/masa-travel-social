@@ -1,0 +1,21 @@
+<%- include('partials/header') %>
+<h1>קבוצות יעד</h1>
+
+<div class="card">
+  <h3>יצירת קבוצה חדשה</h3>
+  <div id="group-error" class="error-box" style="display:none;"></div>
+  <form id="new-group-form">
+    <div class="form-row"><label>שם הקבוצה</label><input type="text" name="name" required></div>
+    <div class="form-row"><label>יעד</label><input type="text" name="destination" required></div>
+    <div class="form-row"><label>תיאור</label><textarea name="description" rows="2"></textarea></div>
+    <button type="submit">יצירה</button>
+  </form>
+</div>
+
+<div class="form-row">
+  <input type="text" id="group-filter" placeholder="סינון לפי יעד...">
+</div>
+<div id="groups-list" class="multi-col-list"></div>
+
+<script src="/js/groups.js"></script>
+<%- include('partials/footer') %>

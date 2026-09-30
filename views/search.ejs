@@ -1,0 +1,49 @@
+<%- include('partials/header') %>
+<h1>חיפוש</h1>
+
+<div class="card">
+  <h3>חיפוש פוסטים</h3>
+  <form id="post-search-form">
+    <div class="form-row"><label>יעד</label><input type="text" name="destination"></div>
+    <div class="form-row">
+      <label>סוג</label>
+      <select name="type">
+        <option value="">הכל</option>
+        <option value="partner">מחפש/ת שותף/ה</option>
+        <option value="recommendation">המלצה</option>
+      </select>
+    </div>
+    <div class="form-row"><label>תגית</label><input type="text" name="tag"></div>
+    <div class="form-row"><label>תקציב מינימלי ליום (€)</label><input type="number" name="minBudget" min="0"></div>
+    <div class="form-row"><label>תקציב מקסימלי ליום (€)</label><input type="number" name="maxBudget" min="0"></div>
+    <button type="submit">חיפוש פוסטים</button>
+  </form>
+</div>
+<div id="post-results" class="multi-col-list"></div>
+
+<div class="card">
+  <h3>חיפוש מטיילים</h3>
+  <form id="user-search-form">
+    <div class="form-row"><label>שפה</label><input type="text" name="language" placeholder="עברית"></div>
+    <div class="form-row">
+      <label>סגנון טיול</label>
+      <select name="travelStyle">
+        <option value="">הכל</option>
+        <option value="relaxed">בטן־גב</option>
+        <option value="backpacking">תרמילאות</option>
+        <option value="museums">מוזיאונים</option>
+        <option value="nightlife">חיי לילה</option>
+        <option value="family">משפחות</option>
+      </select>
+    </div>
+    <div class="form-row"><label>גיל מינימלי</label><input type="number" name="minAge" min="18"></div>
+    <div class="form-row">
+      <label><input type="checkbox" name="verifiedOnly" value="true" style="width:auto;"> מאומתים בלבד</label>
+    </div>
+    <button type="submit">חיפוש מטיילים</button>
+  </form>
+</div>
+<div id="user-results" class="multi-col-list"></div>
+
+<script src="/js/search.js"></script>
+<%- include('partials/footer') %>

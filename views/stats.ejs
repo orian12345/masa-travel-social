@@ -1,0 +1,16 @@
+<%- include('partials/header') %>
+<h1>סטטיסטיקות</h1>
+
+<div class="card">
+  <h3>פוסטים לפי קבוצה</h3>
+  <div id="chart-posts-per-group"></div>
+</div>
+
+<div class="card">
+  <h3>פוסטים לפי חודש (6 חודשים אחרונים)</h3>
+  <div id="chart-posts-per-month"></div>
+</div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="/js/stats.js"></script>
+<%- include('partials/footer') %>

@@ -1,0 +1,14 @@
+<%- include('partials/header') %>
+<div id="post-content"></div>
+
+<div class="card" id="request-panel" style="display:none;">
+  <h3>שליחת בקשה להצטרפות</h3>
+  <div id="request-error" class="error-box" style="display:none;"></div>
+  <div id="request-questions"></div>
+  <button type="button" id="send-request-btn">שליחת בקשה</button>
+  <p id="request-sent-msg" class="badge" style="display:none; margin-top:10px;">הבקשה נשלחה, ממתינה לאישור</p>
+</div>
+
+<script>window.POST_ID = <%- JSON.stringify(postId) %>;</script>
+<script src="/js/post.js"></script>
+<%- include('partials/footer') %>

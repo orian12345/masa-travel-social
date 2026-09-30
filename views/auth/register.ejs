@@ -1,0 +1,46 @@
+<%- include('../partials/header') %>
+<div class="auth-page">
+  <div class="auth-card">
+    <h1>מסלול</h1>
+    <p class="muted" style="text-align:center; margin-bottom: 20px;">יצירת חשבון חדש</p>
+
+    <% if (error) { %>
+      <div class="error-box"><%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/register">
+      <div class="form-row">
+        <label for="displayName">שם מלא</label>
+        <input type="text" id="displayName" name="displayName" required>
+      </div>
+      <div class="form-row">
+        <label for="username">שם משתמש</label>
+        <input type="text" id="username" name="username" required autocomplete="username">
+      </div>
+      <div class="form-row">
+        <label for="password">סיסמה</label>
+        <input type="password" id="password" name="password" required minlength="6" autocomplete="new-password">
+      </div>
+      <div class="form-row">
+        <label for="age">גיל</label>
+        <input type="number" id="age" name="age" min="18" max="120">
+      </div>
+      <div class="form-row">
+        <label for="travelStyle">סגנון טיול</label>
+        <select id="travelStyle" name="travelStyle">
+          <option value="relaxed">בטן־גב</option>
+          <option value="backpacking">תרמילאות</option>
+          <option value="museums">מוזיאונים</option>
+          <option value="nightlife">חיי לילה</option>
+          <option value="family">משפחות</option>
+        </select>
+      </div>
+      <button type="submit" style="width:100%;">הרשמה</button>
+    </form>
+
+    <p class="muted" style="text-align:center; margin-top: 16px;">
+      כבר יש לך חשבון? <a href="/login">התחברות</a>
+    </p>
+  </div>
+</div>
+<%- include('../partials/footer') %>

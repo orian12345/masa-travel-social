@@ -1,0 +1,56 @@
+<%- include('partials/header') %>
+<div id="profile-content"></div>
+
+<div id="verify-section" style="display:none;">
+  <div class="card">
+    <h3>אימות פרופיל</h3>
+    <p class="muted">צלמ/י סלפי חי דרך המצלמה כדי לקבל תג "פרופיל מאומת".</p>
+    <div id="verify-root"></div>
+  </div>
+</div>
+
+<div class="card" id="edit-section" style="display:none;">
+  <h3>עריכת פרופיל</h3>
+  <div id="profile-error" class="error-box" style="display:none;"></div>
+  <form id="edit-profile-form">
+    <div class="form-row"><label>שם מלא</label><input type="text" name="displayName" required></div>
+    <div class="form-row"><label>גיל</label><input type="number" name="age" min="18" max="120"></div>
+    <div class="form-row"><label>אודותיי</label><textarea name="bio" rows="3" maxlength="400"></textarea></div>
+    <div class="form-row"><label>שפות (מופרדות בפסיק)</label><input type="text" name="languages"></div>
+    <div class="form-row">
+      <label>סגנון טיול</label>
+      <select name="travelStyle">
+        <option value="relaxed">בטן־גב</option>
+        <option value="backpacking">תרמילאות</option>
+        <option value="museums">מוזיאונים</option>
+        <option value="nightlife">חיי לילה</option>
+        <option value="family">משפחות</option>
+      </select>
+    </div>
+    <button type="submit">שמירה</button>
+    <button type="button" class="secondary" id="delete-account-btn">מחיקת החשבון</button>
+  </form>
+</div>
+
+<script>window.PROFILE_ID = <%- JSON.stringify(profileId) %>;</script>
+
+<!-- React + Babel standalone: this app is jQuery-driven everywhere else;
+     React is used only for this one Video+Canvas widget (see VerifyCamera.jsx). -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script src="/js/profile.js"></script>
+<script type="text/babel" src="/react/VerifyCamera.jsx"></script>
+<script type="text/babel">
+  function mountVerifyWidget(userId) {
+    const root = ReactDOM.createRoot(document.getElementById('verify-root'));
+    root.render(
+      <VerifyCamera
+        userId={userId}
+        onVerified={() => window.location.reload()}
+      />
+    );
+  }
+</script>
+<%- include('partials/footer') %>

@@ -1,0 +1,212 @@
+/* ---- Font-face: self-hosted Rubik variable font (Hebrew + Latin) ---- */
+@font-face {
+  font-family: 'Rubik';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/Rubik-Hebrew.woff2') format('woff2');
+  unicode-range: U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: 'Rubik';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/Rubik-Latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122;
+}
+
+:root {
+  --bg: oklch(97% 0.012 235);
+  --surface: oklch(99% 0.006 235);
+  --line: oklch(90% 0.018 230);
+  --text: oklch(26% 0.03 250);
+  --text-muted: oklch(54% 0.025 240);
+  --primary: oklch(66% 0.09 235);
+  --primary-soft: oklch(95% 0.025 235);
+  --secondary: oklch(66% 0.09 350);
+  --secondary-soft: oklch(95% 0.02 350);
+  --white: #ffffff;
+  --radius-s: 10px;
+  --radius-m: 16px;
+  --radius-l: 24px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  direction: rtl;
+  font-family: 'Rubik', -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+a { color: var(--secondary); text-decoration: none; }
+a:hover { color: var(--primary); }
+
+h1, h2, h3 { font-weight: 700; margin: 0 0 12px; }
+
+button, .btn {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-m);
+  padding: 12px 20px;
+  cursor: pointer;
+  background: var(--primary);
+  color: var(--white);
+  transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+}
+button:hover, .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px oklch(66% 0.09 235 / 0.3); }
+button:active, .btn:active { transform: translateY(0); }
+button.secondary, .btn.secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1.5px solid var(--line);
+}
+button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  width: 100%;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  padding: 18px;
+  margin-bottom: 14px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.card:hover { box-shadow: 0 8px 20px oklch(26% 0.03 250 / 0.08); }
+
+.container { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+
+/* Top navigation */
+.navbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  padding: 14px 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.navbar .container { display: flex; align-items: center; justify-content: space-between; }
+.navbar .brand {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary);
+  text-shadow: 0 1px 0 oklch(99% 0.006 235 / 0.8);
+}
+.navbar nav { display: flex; gap: 18px; align-items: center; }
+.navbar nav a { color: var(--text-muted); font-weight: 600; }
+.navbar nav a.active { color: var(--primary); }
+
+/* Chip / tag */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--primary-soft);
+  color: var(--primary);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.chip.active { background: var(--primary); color: var(--white); }
+
+/* Multi-column layout for recommendation/results lists (required CSS3 feature) */
+.multi-col-list {
+  columns: 280px 2;
+  column-gap: 16px;
+}
+.multi-col-list .card { break-inside: avoid; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--secondary-soft);
+  color: var(--secondary);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.muted { color: var(--text-muted); font-size: 13px; }
+
+.error-box {
+  background: oklch(66% 0.09 25 / 0.12);
+  color: oklch(45% 0.15 25);
+  border: 1px solid oklch(66% 0.09 25 / 0.4);
+  border-radius: var(--radius-s);
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 13.5px;
+}
+
+.form-row { margin-bottom: 14px; }
+.form-row label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.auth-card {
+  background: var(--surface);
+  border-radius: var(--radius-l);
+  padding: 36px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 20px 50px oklch(26% 0.03 250 / 0.12);
+}
+.auth-card h1 {
+  text-align: center;
+  color: var(--primary);
+  text-shadow: 0 2px 10px oklch(66% 0.09 235 / 0.25);
+}
+
+/* Chat */
+.chat-layout { display: flex; gap: 16px; height: calc(100vh - 140px); }
+.chat-list { width: 260px; overflow-y: auto; }
+.conversation-row:hover { background: var(--primary-soft); }
+.conversation-row.active { background: var(--primary-soft); }
+.chat-window { flex: 1; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-m); }
+.chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.chat-bubble {
+  max-width: 70%;
+  padding: 10px 14px;
+  border-radius: var(--radius-m);
+  font-size: 14px;
+}
+.chat-bubble.mine { align-self: flex-end; background: var(--primary); color: var(--white); }
+.chat-bubble.theirs { align-self: flex-start; background: var(--primary-soft); color: var(--text); }
+.chat-input-row { display: flex; gap: 8px; padding: 14px; border-top: 1px solid var(--line); }
+.chat-input-row input { flex: 1; }
+
+/* Verify camera (React video + canvas component) */
+.verify-widget { text-align: center; }
+.verify-widget video, .verify-widget canvas {
+  width: 100%;
+  max-width: 320px;
+  border-radius: var(--radius-m);
+  background: #000;
+}
+
+footer { text-align: center; padding: 24px; color: var(--text-muted); font-size: 12.5px; }

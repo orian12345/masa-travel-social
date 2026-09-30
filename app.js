@@ -1,0 +1,74 @@
+require('dotenv').config();
+
+const express = require('express');
+const path = require('path');
+const http = require('http');
+const session = require('express-session');
+const methodOverride = require('method-override');
+const { Server } = require('socket.io');
+
+const connectDB = require('./config/db');
+const { attachUser } = require('./middleware/auth');
+const registerChatHandlers = require('./sockets/chat');
+
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const postRoutes = require('./routes/postRoutes');
+const groupRoutes = require('./routes/groupRoutes');
+const messageRoutes = require('./routes/messageRoutes');
+const statsRoutes = require('./routes/statsRoutes');
+const pageRoutes = require('./routes/pageRoutes');
+const chatRequestRoutes = require('./routes/chatRequestRoutes');
+const moderationRoutes = require('./routes/moderationRoutes');
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+const sessionMiddleware = session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 1000 * 60 * 60 * 24 * 7 }, // 1 week
+});
+
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
+app.use(sessionMiddleware);
+app.use(attachUser);
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Server-rendered pages (login/register/home/profile/group/chat shells).
+app.use('/', pageRoutes);
+
+// JSON REST API that the client's jQuery Ajax calls hit.
+app.use('/', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/groups', groupRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/stats', statsRoutes);
+app.use('/api/chat-requests', chatRequestRoutes);
+app.use('/api/moderation', moderationRoutes);
+
+app.use((req, res) => {
+  res.status(404).send('הדף לא נמצא');
+});
+
+// Shares the same session with every socket handshake, so
+// socket.request.session.userId is the same login as the HTTP session
+// (Socket.io v4.6+'s io.engine.use() accepts plain Express middleware).
+io.engine.use(sessionMiddleware);
+registerChatHandlers(io);
+
+const PORT = process.env.PORT || 3000;
+
+connectDB().then(() => {
+  server.listen(PORT, () => {
+    console.log(`Masa server running on http://localhost:${PORT}`);
+  });
+});

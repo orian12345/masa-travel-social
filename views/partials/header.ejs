@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>מסלול</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script>
+    // Client-side convenience only (e.g. "is this my post, show edit/delete?").
+    // The server enforces the real permission check on every request regardless.
+    window.CURRENT_USER_ID = <%- JSON.stringify(currentUserId) %>;
+  </script>
+</head>
+<body>
+<% if (currentUserId) { %>
+<header class="navbar">
+  <div class="container">
+    <a href="/" class="brand">מסלול</a>
+    <nav>
+      <a href="/">בית</a>
+      <a href="/groups">קבוצות</a>
+      <a href="/search">חיפוש</a>
+      <a href="/chat">הודעות</a>
+      <a href="/requests">בקשות</a>
+      <a href="/stats">סטטיסטיקות</a>
+      <a href="/profile/<%= currentUserId %>">פרופיל</a>
+      <button type="button" id="logout-btn" class="secondary">התנתקות</button>
+    </nav>
+  </div>
+</header>
+<% } %>
+<main class="container" style="padding-top: 24px; padding-bottom: 40px;">

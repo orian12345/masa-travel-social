@@ -1,0 +1,18 @@
+<%- include('partials/header') %>
+<h1>הודעות</h1>
+
+<div class="chat-layout">
+  <div class="chat-list card" id="conversations-list"></div>
+  <div class="chat-window">
+    <div id="chat-with-name" class="muted" style="padding:14px; border-bottom:1px solid var(--line);">בחר/י שיחה</div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-row">
+      <input type="text" id="chat-input" placeholder="כתוב/י הודעה..." disabled>
+      <button type="button" id="chat-send-btn" disabled>שליחה</button>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/chat.js"></script>
+<%- include('partials/footer') %>
