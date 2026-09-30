@@ -1,47 +1,10 @@
 <%- include('partials/header') %>
-<h1>הפיד שלי</h1>
-<p class="muted">הפוסטים שלך, ופוסטים מהקבוצות שאת/ה חבר/ה בהן.</p>
-
-<div class="card">
-  <h3>פוסט חדש</h3>
-  <div id="post-error" class="error-box" style="display:none;"></div>
-  <form id="new-post-form">
-    <div class="form-row">
-      <label>סוג</label>
-      <select name="type" required>
-        <option value="partner">מחפש/ת שותף/ה</option>
-        <option value="recommendation">המלצה</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <label>כותרת</label>
-      <input type="text" name="title" required maxlength="120">
-    </div>
-    <div class="form-row">
-      <label>יעד</label>
-      <input type="text" name="destination" required>
-    </div>
-    <div class="form-row">
-      <label>תיאור</label>
-      <textarea name="content" rows="3" required maxlength="1000"></textarea>
-    </div>
-    <div class="form-row">
-      <label>תקציב יומי (אופציונלי, ב-€)</label>
-      <input type="number" name="budgetPerDay" min="0">
-    </div>
-    <div class="form-row">
-      <label>תגיות (מופרדות בפסיק)</label>
-      <input type="text" name="tags" placeholder="בטן־גב, תרמילאות">
-    </div>
-
-    <div id="screening-section" style="display:none;">
-      <p class="muted">שאלות סינון (עד 3) — מי שירצה להצטרף יצטרך לענות עליהן לפני שתחליט/י אם לאשר צ'אט.</p>
-      <div id="screening-questions"></div>
-      <button type="button" id="add-question-btn" class="secondary" style="margin-bottom:14px;">+ הוספת שאלה</button>
-    </div>
-
-    <button type="submit">פרסום</button>
-  </form>
+<div style="display:flex; align-items:center; justify-content:space-between;">
+  <div>
+    <h1>הפיד</h1>
+    <p class="muted">הפוסטים של כל המשתמשים.</p>
+  </div>
+  <a href="/create"><button type="button">+ פוסט חדש</button></a>
 </div>
 
 <div id="feed-list" class="multi-col-list"></div>

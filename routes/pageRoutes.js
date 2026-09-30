@@ -3,6 +3,7 @@ const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 
 router.get('/', requireAuth, (req, res) => res.render('index'));
+router.get('/create', requireAuth, (req, res) => res.render('create'));
 router.get('/search', requireAuth, (req, res) => res.render('search'));
 router.get('/groups', requireAuth, (req, res) => res.render('groups'));
 router.get('/groups/:id', requireAuth, (req, res) => res.render('group', { groupId: req.params.id }));

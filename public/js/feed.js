@@ -36,6 +36,14 @@ function renderPostCard(post) {
     `
     : '';
 
+  let contactAction = '';
+  if (!isMine && post.author) {
+    contactAction =
+      post.type === 'partner'
+        ? `<a href="/posts/${post._id}"><button type="button">לפרטים ובקשת הצטרפות</button></a>`
+        : `<button type="button" class="secondary contact-author" data-user-id="${post.author._id}">יצירת קשר עם ${escapeHtml(post.author.displayName)}</button>`;
+  }
+
   return `
     <div class="card" data-post-id="${post._id}">
       <span class="badge">${typeLabel}</span>
@@ -44,7 +52,7 @@ function renderPostCard(post) {
       <p>${escapeHtml(post.content)}</p>
       <div>${tagsHtml}</div>
       <p class="muted" style="margin-top:8px;">מאת ${escapeHtml(post.author ? post.author.displayName : 'לא ידוע')}</p>
-      ${!isMine && post.type === 'partner' ? `<a href="/posts/${post._id}"><button type="button">לפרטים ובקשת הצטרפות</button></a>` : ''}
+      ${contactAction}
       ${actions}
     </div>
   `;
@@ -66,58 +74,26 @@ function loadFeed() {
   });
 }
 
-function addQuestionRow() {
-  const count = $('#screening-questions .question-row').length;
-  if (count >= 3) return;
-  $('#screening-questions').append(`
-    <div class="form-row question-row">
-      <label>שאלה ${count + 1}</label>
-      <input type="text" class="question-text" placeholder="לדוגמה: מה אופי הטיול שאת/ה מחפש/ת?">
-      <input type="text" class="question-options" placeholder="אפשרויות מופרדות בפסיק, למשל: רגוע, עמוס, מסיבות" style="margin-top:6px;">
-    </div>
-  `);
-}
-
 $(function () {
   loadFeed();
 
-  $('select[name=type]').on('change', function () {
-    $('#screening-section').toggle($(this).val() === 'partner');
-  }).trigger('change');
-
-  $('#add-question-btn').on('click', addQuestionRow);
-
-  $('#new-post-form').on('submit', function (e) {
-    e.preventDefault();
-    const $form = $(this);
-    const data = {};
-    $form.serializeArray().forEach((f) => { data[f.name] = f.value; });
-
-    if (data.type === 'partner') {
-      data.screeningQuestions = [];
-      $('#screening-questions .question-row').each(function () {
-        const question = $(this).find('.question-text').val().trim();
-        const options = $(this).find('.question-options').val().split(',').map((o) => o.trim()).filter(Boolean);
-        if (question && options.length >= 2) {
-          data.screeningQuestions.push({ question, options });
-        }
-      });
-    }
-
+  $('#feed-list').on('click', '.contact-author', function () {
+    const userId = $(this).data('user-id').toString();
+    const $btn = $(this);
     $.ajax({
-      url: '/api/posts',
+      url: '/api/chat-requests',
       method: 'POST',
       contentType: 'application/json',
-      data: JSON.stringify(data),
-      success: function () {
-        $('#post-error').hide();
-        $form[0].reset();
-        $('#screening-questions').empty();
-        loadFeed();
+      data: JSON.stringify({ toUser: userId, answers: [] }),
+      success: function (result) {
+        if (result.alreadyApproved) {
+          window.location.href = '/chat?with=' + userId;
+        } else {
+          $btn.prop('disabled', true).text('בקשת הצ׳אט נשלחה');
+        }
       },
       error: function (xhr) {
-        const message = (xhr.responseJSON && xhr.responseJSON.error) || 'שגיאה בפרסום הפוסט';
-        $('#post-error').text(message).show();
+        alert((xhr.responseJSON && xhr.responseJSON.error) || 'שגיאה בשליחת הבקשה');
       },
     });
   });
