@@ -36,6 +36,12 @@ const sessionMiddleware = session({
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// A new value every time the server process starts (i.e. every deploy) —
+// appended as "?v=" on CSS/JS tags in the views so a phone/browser that
+// aggressively cached the old static files is forced to fetch the new ones
+// instead of silently running stale JS after a deploy.
+app.locals.assetVersion = Date.now();
+
 // Raised from the 100kb default so a base64-encoded post image (see
 // models/Post.js) fits in the request body.
 app.use(express.json({ limit: '3mb' }));
