@@ -3,11 +3,18 @@ function drawBarChart(containerId, data) {
   const height = 320;
   const margin = { top: 20, right: 20, bottom: 60, left: 40 };
 
+  // A fixed viewBox keeps all the D3 scales below working in the same
+  // coordinate space regardless of actual rendered size — width:100% +
+  // height:auto (no fixed pixel width/height attrs) is what lets the chart
+  // shrink to fit a phone screen instead of forcing horizontal scroll.
   const svg = d3
     .select(containerId)
     .append('svg')
-    .attr('width', width)
-    .attr('height', height);
+    .attr('viewBox', `0 0 ${width} ${height}`)
+    .attr('preserveAspectRatio', 'xMidYMid meet')
+    .style('width', '100%')
+    .style('height', 'auto')
+    .style('max-width', width + 'px');
 
   const x = d3
     .scaleBand()

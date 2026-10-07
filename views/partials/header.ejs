@@ -17,7 +17,10 @@
 <header class="navbar">
   <div class="container">
     <a href="/" class="brand">TravelMatch</a>
-    <nav>
+    <button type="button" id="nav-toggle" class="icon-button" aria-label="פתיחת תפריט" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav id="nav-menu">
       <a href="/">בית</a>
       <a href="/create">יצירת פוסט</a>
       <a href="/groups">קבוצות</a>
@@ -30,5 +33,6 @@
     </nav>
   </div>
 </header>
+<div id="nav-backdrop"></div>
 <% } %>
 <main class="container" style="padding-top: 24px; padding-bottom: 40px;">

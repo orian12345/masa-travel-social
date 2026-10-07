@@ -123,6 +123,56 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary-sof
 .navbar nav a:hover { background: oklch(93% 0.006 260); text-decoration: none; }
 .navbar nav a.active { color: var(--primary); background: var(--primary-soft); }
 
+.icon-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  color: var(--text);
+  border-radius: 50%;
+  padding: 0;
+}
+.icon-button:hover { background: oklch(93% 0.006 260); }
+.icon-button svg { width: 24px; height: 24px; }
+
+#nav-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 25;
+}
+#nav-backdrop.open { display: block; }
+
+/* Below this width the horizontal nav becomes a side drawer (slides in from
+   the right, since the page is RTL) opened by the hamburger button. */
+@media (max-width: 860px) {
+  #nav-toggle { display: flex; }
+
+  .navbar nav {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: min(280px, 80vw);
+    background: var(--surface);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    padding: 70px 16px 16px;
+    box-shadow: -6px 0 24px rgba(0, 0, 0, 0.18);
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    z-index: 30;
+    overflow-y: auto;
+  }
+  .navbar nav.open { transform: translateX(0); }
+  .navbar nav a,
+  .navbar nav button { text-align: right; width: 100%; }
+}
+
 /* Chip / tag */
 .chip {
   display: inline-flex;
@@ -243,7 +293,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary-sof
 
 /* Chat */
 .chat-layout { display: flex; gap: 16px; height: calc(100vh - 140px); }
-.chat-list { width: 260px; overflow-y: auto; }
+.chat-list { width: 260px; flex-shrink: 0; overflow-y: auto; }
 .conversation-row:hover { background: var(--primary-soft); }
 .conversation-row.active { background: var(--primary-soft); }
 .chat-window { flex: 1; display: flex; flex-direction: column; background: var(--surface); border-radius: var(--radius-m); box-shadow: var(--card-shadow); }
@@ -269,3 +319,31 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary-sof
 }
 
 footer { text-align: center; padding: 24px; color: var(--text-muted); font-size: 12.5px; }
+
+/* ---- Responsive: phone-width layout ---- */
+@media (max-width: 640px) {
+  .container { padding: 0 14px; }
+  .navbar .brand { font-size: 20px; }
+  .card { padding: 14px; border-radius: var(--radius-s); }
+  .auth-card { padding: 22px; max-width: 100%; }
+
+  /* A single column reads better than a cramped 2-up grid once the
+     container is this narrow. */
+  .multi-col-list { columns: 1; }
+
+  /* The side-by-side chat list + window doesn't fit a phone screen —
+     stack them, with the conversation list given a capped height so the
+     active chat window still gets most of the vertical space. */
+  .chat-layout { flex-direction: column; height: calc(100vh - 120px); }
+  .chat-list { width: 100%; max-height: 180px; }
+  .chat-window { min-height: 300px; }
+
+  .post-action-bar button { font-size: 12.5px; padding: 8px 2px; }
+  .post-action-bar svg { width: 16px; height: 16px; }
+}
+
+/* ---- Responsive: use the full viewport width on larger screens too,
+   instead of leaving the layout capped narrower than the window. ---- */
+@media (min-width: 1200px) {
+  .container { max-width: 1100px; }
+}
