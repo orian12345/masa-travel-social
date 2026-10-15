@@ -1,7 +1,10 @@
 const Post = require('../models/Post');
 const Group = require('../models/Group');
 
-const MAX_IMAGE_CHARS = 1_500_000; // ~1.1MB decoded — keeps documents reasonable
+// The client (create.js) resizes/compresses every image through a canvas
+// before upload, so this is a generous safety margin rather than the real
+// day-to-day ceiling — a typical compressed photo lands well under 500KB.
+const MAX_IMAGE_CHARS = 3_000_000; // ~2.2MB decoded
 
 // Adds the two fields the UI actually needs for likes, without shipping the
 // full liker-id array to every client.

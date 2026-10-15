@@ -11,7 +11,42 @@ function addQuestionRow() {
 }
 
 let selectedImageBase64 = null;
-const MAX_IMAGE_BYTES = 1_000_000; // ~1MB source file, before base64 overhead
+const MAX_SOURCE_FILE_BYTES = 20_000_000; // sanity cap on the original file, before compression
+const MAX_DIMENSION = 1280; // longer side, in px, after resizing
+const JPEG_QUALITY = 0.8;
+
+// Phone camera photos are routinely several MB — far too big to store as a
+// base64 field on a MongoDB document, and too big for the request body
+// limit. Rather than reject every real photo, downscale it and re-encode as
+// a JPEG through a canvas, which comfortably fits almost any source image.
+function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('לא ניתן לקרוא את הקובץ'));
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('הקובץ שנבחר אינו תמונה תקינה'));
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > MAX_DIMENSION) {
+          height = Math.round((height * MAX_DIMENSION) / width);
+          width = MAX_DIMENSION;
+        } else if (height > MAX_DIMENSION) {
+          width = Math.round((width * MAX_DIMENSION) / height);
+          height = MAX_DIMENSION;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', JPEG_QUALITY));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 $(function () {
   $('select[name=type]').on('change', function () {
@@ -22,24 +57,31 @@ $(function () {
 
   $('#image-input').on('change', function () {
     const file = this.files[0];
+    const $input = $(this);
     if (!file) {
       selectedImageBase64 = null;
       $('#image-preview').hide();
       return;
     }
-    if (file.size > MAX_IMAGE_BYTES) {
-      alert('התמונה גדולה מדי (מקסימום כ-1MB). נסה/י תמונה קטנה יותר.');
-      this.value = '';
+    if (file.size > MAX_SOURCE_FILE_BYTES) {
+      alert('הקובץ גדול מדי (מעל 20MB). נסה/י תמונה אחרת.');
+      $input.val('');
       selectedImageBase64 = null;
       $('#image-preview').hide();
       return;
     }
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      selectedImageBase64 = e.target.result;
-      $('#image-preview').attr('src', selectedImageBase64).show();
-    };
-    reader.readAsDataURL(file);
+
+    $('#image-preview').hide();
+    compressImage(file)
+      .then((dataUrl) => {
+        selectedImageBase64 = dataUrl;
+        $('#image-preview').attr('src', dataUrl).show();
+      })
+      .catch((err) => {
+        alert(err.message || 'שגיאה בעיבוד התמונה');
+        $input.val('');
+        selectedImageBase64 = null;
+      });
   });
 
   $('#new-post-form').on('submit', function (e) {
