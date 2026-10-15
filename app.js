@@ -21,6 +21,7 @@ const pageRoutes = require('./routes/pageRoutes');
 const chatRequestRoutes = require('./routes/chatRequestRoutes');
 const moderationRoutes = require('./routes/moderationRoutes');
 const commentRoutes = require('./routes/commentRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -64,6 +65,7 @@ app.use('/api/stats', statsRoutes);
 app.use('/api/chat-requests', chatRequestRoutes);
 app.use('/api/moderation', moderationRoutes);
 app.use('/api/posts/:postId/comments', commentRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.use((req, res) => {
   res.status(404).send('הדף לא נמצא');

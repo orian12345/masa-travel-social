@@ -33,6 +33,9 @@ const ICON_SHARE =
 
 let feedPosts = [];
 let editingPostId = null;
+let feedPage = 1;
+let feedHasMore = false;
+let feedLoading = false;
 const openComments = {}; // postId -> true while its comment panel is expanded
 
 function renderPostCard(post) {
@@ -85,6 +88,9 @@ function renderPostCard(post) {
   const isOpen = !!openComments[post._id];
   const authorName = post.author ? post.author.displayName : 'לא ידוע';
   const initial = authorName.trim().charAt(0) || '?';
+  const expertBadge = post.authorIsExpert
+    ? '<span class="badge" style="padding:1px 8px; font-size:10px; margin-right:4px;">ממליץ מומחה</span>'
+    : '';
 
   const shareUrl = window.location.origin + '/posts/' + post._id;
   const shareText = encodeURIComponent(post.title + ' - ' + post.destination + '\n' + shareUrl);
@@ -96,7 +102,7 @@ function renderPostCard(post) {
       <div class="post-header">
         <div class="post-avatar" style="background:${avatarColor(authorName)};">${escapeHtml(initial)}</div>
         <div class="post-header-text">
-          <span class="post-author-name">${escapeHtml(authorName)}</span>
+          <span class="post-author-name">${escapeHtml(authorName)}${expertBadge}</span>
           <span class="post-timestamp">
             ${timeAgo(post.createdAt)} · <span class="badge" style="padding:1px 8px; font-size:10.5px;">${typeLabel}</span>
             ${post.group ? ' · ' + escapeHtml(post.group.name) : ''}
@@ -141,17 +147,42 @@ function renderFeed() {
   const $list = $('#feed-list').empty();
   if (!feedPosts.length) {
     $list.append('<p class="muted">אין עדיין פוסטים. פרסמ/י את הראשון!</p>');
-    return;
+  } else {
+    feedPosts.forEach((post) => $list.append(renderPostCard(post)));
+    Object.keys(openComments).forEach((postId) => {
+      if (openComments[postId]) loadComments(postId);
+    });
   }
-  feedPosts.forEach((post) => $list.append(renderPostCard(post)));
-  Object.keys(openComments).forEach((postId) => {
-    if (openComments[postId]) loadComments(postId);
+
+  $('#feed-load-more').remove();
+  if (feedHasMore) {
+    $('#feed-list').after('<div style="text-align:center; margin-top:4px;"><button type="button" id="feed-load-more" class="secondary">טעינת עוד פוסטים</button></div>');
+  }
+}
+
+// Resets to page 1 and replaces the feed — used on first load and whenever
+// something changes that could affect page 1 (new/edited/deleted post).
+function loadFeed() {
+  feedPage = 1;
+  feedLoading = true;
+  $.get('/api/posts/feed', { page: feedPage }, function (result) {
+    feedLoading = false;
+    feedPosts = result.posts;
+    feedHasMore = result.hasMore;
+    renderFeed();
   });
 }
 
-function loadFeed() {
-  $.get('/api/posts/feed', function (posts) {
-    feedPosts = posts;
+// Appends the next page instead of replacing what's already shown.
+function loadMoreFeed() {
+  if (feedLoading || !feedHasMore) return;
+  feedLoading = true;
+  const nextPage = feedPage + 1;
+  $.get('/api/posts/feed', { page: nextPage }, function (result) {
+    feedLoading = false;
+    feedPage = nextPage;
+    feedPosts = feedPosts.concat(result.posts);
+    feedHasMore = result.hasMore;
     renderFeed();
   });
 }
@@ -180,6 +211,10 @@ function loadComments(postId) {
 
 $(function () {
   loadFeed();
+
+  // #feed-load-more lives outside #feed-list (added/removed by renderFeed),
+  // so it needs a delegated handler from somewhere that's never replaced.
+  $(document).on('click', '#feed-load-more', loadMoreFeed);
 
   $('#feed-list').on('click', '.contact-author', function () {
     const userId = $(this).data('user-id').toString();

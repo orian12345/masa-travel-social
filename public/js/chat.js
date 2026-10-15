@@ -66,9 +66,12 @@ function loadConversations(selectUserId) {
     }
     conversations.forEach((c) => {
       $list.append(`
-        <div class="conversation-row" data-user-id="${c.userId}" style="padding:10px; border-radius: var(--radius-s); cursor:pointer;">
-          <strong>${escapeHtml(c.displayName)}</strong>
-          <p class="muted" style="margin:2px 0 0;">${escapeHtml(c.lastMessage || '')}</p>
+        <div class="conversation-row" data-user-id="${c.userId}" style="padding:10px; border-radius: var(--radius-s); cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+          <div>
+            <strong>${escapeHtml(c.displayName)}</strong>
+            <p class="muted" style="margin:2px 0 0;">${escapeHtml(c.lastMessage || '')}</p>
+          </div>
+          ${c.unread ? '<span class="nav-badge">•</span>' : ''}
         </div>
       `);
     });
@@ -98,9 +101,12 @@ function loadGroupChats() {
     }
     groups.forEach((g) => {
       $list.append(`
-        <div class="group-chat-row" data-group-id="${g._id}" style="padding:10px; border-radius: var(--radius-s); cursor:pointer;">
-          <strong>${escapeHtml(g.name)}</strong>
-          <p class="muted" style="margin:2px 0 0;">${escapeHtml(g.destination)}</p>
+        <div class="group-chat-row" data-group-id="${g._id}" style="padding:10px; border-radius: var(--radius-s); cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+          <div>
+            <strong>${escapeHtml(g.name)}</strong>
+            <p class="muted" style="margin:2px 0 0;">${escapeHtml(g.destination)}</p>
+          </div>
+          ${g.unread ? '<span class="nav-badge">•</span>' : ''}
         </div>
       `);
     });

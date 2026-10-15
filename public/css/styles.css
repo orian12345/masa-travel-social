@@ -123,6 +123,21 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary-sof
 .navbar nav a:hover { background: oklch(93% 0.006 260); text-decoration: none; }
 .navbar nav a.active { color: var(--primary); background: var(--primary-soft); }
 
+.nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: oklch(58% 0.21 25); /* red */
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
 .icon-button {
   display: none;
   align-items: center;

@@ -32,4 +32,25 @@ $(function () {
   $navToggle.on('click', toggleNav);
   $navBackdrop.on('click', closeNav);
   $navMenu.on('click', 'a', closeNav);
+
+  // Nav badges: polled rather than wired to every page's own socket, since
+  // most pages don't otherwise need a live connection — a 30s refresh is
+  // plenty for "you have unread messages/requests" to feel current.
+  function setBadge($el, count) {
+    if (count > 0) $el.text(count > 9 ? '9+' : count).prop('hidden', false);
+    else $el.prop('hidden', true);
+  }
+
+  function refreshNotificationBadges() {
+    if (!window.CURRENT_USER_ID) return;
+    $.get('/api/notifications/summary', function (data) {
+      setBadge($('#badge-messages'), data.unreadMessageRooms);
+      setBadge($('#badge-requests'), data.pendingRequests);
+    });
+  }
+
+  if (window.CURRENT_USER_ID) {
+    refreshNotificationBadges();
+    setInterval(refreshNotificationBadges, 30000);
+  }
 });

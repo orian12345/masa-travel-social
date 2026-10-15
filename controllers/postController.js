@@ -1,21 +1,31 @@
 const Post = require('../models/Post');
 const Group = require('../models/Group');
+const { getExpertAuthorIds } = require('../utils/expertRecommenders');
 
 // The client (create.js) resizes/compresses every image through a canvas
 // before upload, so this is a generous safety margin rather than the real
 // day-to-day ceiling — a typical compressed photo lands well under 500KB.
 const MAX_IMAGE_CHARS = 3_000_000; // ~2.2MB decoded
+const FEED_PAGE_SIZE = 10;
 
-// Adds the two fields the UI actually needs for likes, without shipping the
-// full liker-id array to every client.
-function withLikeInfo(post, userId) {
+// Adds the fields the UI actually needs for likes and the "expert
+// recommender" badge, without shipping the full liker-id array to every
+// client or making each card compute its own author-expert status.
+function withLikeInfo(post, userId, expertAuthorIds) {
   const likes = post.likes || [];
   return {
     ...post,
     likesCount: likes.length,
     likedByMe: likes.some((id) => id.toString() === userId),
     likes: undefined,
+    authorIsExpert: !!(post.author && expertAuthorIds.has(post.author._id.toString())),
   };
+}
+
+async function attachExtras(posts, userId) {
+  const authorIds = posts.map((p) => p.author && p.author._id).filter(Boolean);
+  const expertAuthorIds = await getExpertAuthorIds(authorIds);
+  return posts.map((p) => withLikeInfo(p, userId, expertAuthorIds));
 }
 
 const POPULATE_AUTHOR = 'displayName verified';
@@ -26,21 +36,32 @@ const POPULATE_SHARED_FROM = { path: 'sharedFrom', select: 'title destination au
 // hidden from non-members here — that's requirement #21's example ("a user
 // can't see posts in a private group they're not a member of"), which still
 // applies even though the rest of the feed is now global on request.
+//
+// Paginated via ?page= (1-based, defaults to 1) rather than returning every
+// post at once — fetches one extra row to answer "is there a next page"
+// without a separate count query.
 exports.listFeed = async (req, res) => {
   try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+
     const myGroups = await Group.find({ members: req.session.userId }).select('_id');
     const groupIds = myGroups.map((g) => g._id);
 
-    const posts = await Post.find({
+    const rows = await Post.find({
       $or: [{ group: null }, { author: req.session.userId }, { group: { $in: groupIds } }],
     })
       .populate('author', POPULATE_AUTHOR)
       .populate('group', 'name destination')
       .populate(POPULATE_SHARED_FROM)
       .sort({ createdAt: -1 })
+      .skip((page - 1) * FEED_PAGE_SIZE)
+      .limit(FEED_PAGE_SIZE + 1)
       .lean();
 
-    res.json(posts.map((p) => withLikeInfo(p, req.session.userId)));
+    const hasMore = rows.length > FEED_PAGE_SIZE;
+    const posts = await attachExtras(rows.slice(0, FEED_PAGE_SIZE), req.session.userId);
+
+    res.json({ posts, hasMore, page });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'שגיאה בטעינת הפיד' });
@@ -55,7 +76,8 @@ exports.getOne = async (req, res) => {
       .populate(POPULATE_SHARED_FROM)
       .lean();
     if (!post) return res.status(404).json({ error: 'הפוסט לא נמצא' });
-    res.json(withLikeInfo(post, req.session.userId));
+    const [withExtras] = await attachExtras([post], req.session.userId);
+    res.json(withExtras);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'שגיאה בטעינת הפוסט' });
@@ -69,7 +91,7 @@ exports.listByGroup = async (req, res) => {
       .populate(POPULATE_SHARED_FROM)
       .sort({ createdAt: -1 })
       .lean();
-    res.json(posts.map((p) => withLikeInfo(p, req.session.userId)));
+    res.json(await attachExtras(posts, req.session.userId));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'שגיאה בטעינת פוסטי הקבוצה' });
@@ -100,7 +122,7 @@ exports.search = async (req, res) => {
       .limit(100)
       .lean();
 
-    res.json(posts.map((p) => withLikeInfo(p, req.session.userId)));
+    res.json(await attachExtras(posts, req.session.userId));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'שגיאה בחיפוש' });

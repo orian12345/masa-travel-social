@@ -2,7 +2,16 @@ const mongoose = require('mongoose');
 const Message = require('../models/Message');
 const User = require('../models/User');
 const Group = require('../models/Group');
+const ReadState = require('../models/ReadState');
 const { canMessage } = require('../utils/chatPermissions');
+
+async function markRoomRead(userId, roomId) {
+  await ReadState.updateOne(
+    { user: userId, roomId },
+    { user: userId, roomId, lastReadAt: new Date() },
+    { upsert: true }
+  );
+}
 
 // The sidebar list: every distinct person the current user has exchanged
 // 1:1 messages with, plus their most recent message as a preview. Group
@@ -33,13 +42,20 @@ exports.listConversations = async (req, res) => {
     const users = await User.find({ _id: { $in: otherUserIds } }).select('displayName').lean();
     const userById = Object.fromEntries(users.map((u) => [u._id.toString(), u]));
 
+    const readStates = await ReadState.find({ user: req.session.userId, roomId: { $in: rows.map((r) => r._id) } }).lean();
+    const lastReadByRoom = Object.fromEntries(readStates.map((r) => [r.roomId, r.lastReadAt]));
+
     const conversations = rows.map((r) => {
       const otherId = (r.sender.toString() === req.session.userId ? r.recipient : r.sender).toString();
+      const lastRead = lastReadByRoom[r._id];
+      // My own last message in a room never counts as "unread" for me.
+      const unread = r.sender.toString() !== req.session.userId && (!lastRead || r.lastAt > lastRead);
       return {
         userId: otherId,
         displayName: userById[otherId] ? userById[otherId].displayName : 'משתמש שנמחק',
         lastMessage: r.lastMessage,
         lastAt: r.lastAt,
+        unread,
       };
     });
 
@@ -55,7 +71,28 @@ exports.listConversations = async (req, res) => {
 exports.listMyGroupChats = async (req, res) => {
   try {
     const groups = await Group.find({ members: req.session.userId }).select('name destination').lean();
-    res.json(groups);
+
+    const roomIds = groups.map((g) => Message.roomForGroup(g._id));
+    const [readStates, lastMessages] = await Promise.all([
+      ReadState.find({ user: req.session.userId, roomId: { $in: roomIds } }).lean(),
+      Message.aggregate([
+        { $match: { roomId: { $in: roomIds } } },
+        { $sort: { createdAt: -1 } },
+        { $group: { _id: '$roomId', lastAt: { $first: '$createdAt' }, sender: { $first: '$sender' } } },
+      ]),
+    ]);
+    const lastReadByRoom = Object.fromEntries(readStates.map((r) => [r.roomId, r.lastReadAt]));
+    const lastMsgByRoom = Object.fromEntries(lastMessages.map((m) => [m._id, m]));
+
+    const groupsWithUnread = groups.map((g) => {
+      const roomId = Message.roomForGroup(g._id);
+      const last = lastMsgByRoom[roomId];
+      const lastRead = lastReadByRoom[roomId];
+      const unread = !!last && last.sender.toString() !== req.session.userId && (!lastRead || last.lastAt > lastRead);
+      return { ...g, unread };
+    });
+
+    res.json(groupsWithUnread);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'שגיאה בטעינת קבוצות הצ׳אט' });
@@ -64,6 +101,7 @@ exports.listMyGroupChats = async (req, res) => {
 
 // History load on opening a conversation — the live part (new messages
 // while the chat is open) travels over Socket.io instead, not this route.
+// Opening it also marks the room read, which is what clears its unread badge.
 exports.history = async (req, res) => {
   try {
     const allowed = await canMessage(req.session.userId, req.params.otherUserId);
@@ -73,6 +111,7 @@ exports.history = async (req, res) => {
 
     const roomId = Message.roomFor(req.session.userId, req.params.otherUserId);
     const messages = await Message.find({ roomId }).sort({ createdAt: 1 }).limit(200).lean();
+    await markRoomRead(req.session.userId, roomId);
     res.json(messages);
   } catch (err) {
     console.error(err);
@@ -94,6 +133,7 @@ exports.groupHistory = async (req, res) => {
       .sort({ createdAt: 1 })
       .limit(200)
       .lean();
+    await markRoomRead(req.session.userId, roomId);
     res.json(messages);
   } catch (err) {
     console.error(err);
