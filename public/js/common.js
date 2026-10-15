@@ -53,4 +53,13 @@ $(function () {
     refreshNotificationBadges();
     setInterval(refreshNotificationBadges, 30000);
   }
+
+  // Registers the (deliberately minimal — see sw.js) service worker so the
+  // browser treats the site as installable ("Add to Home Screen" on mobile,
+  // an install icon in the address bar on desktop).
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(function (err) {
+      console.error('Service worker registration failed', err);
+    });
+  }
 });
